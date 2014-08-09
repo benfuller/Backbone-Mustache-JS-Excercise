@@ -37,9 +37,65 @@ var ExerciseModel = Backbone.Model.extend({});
 // adding methods and properties, etc.
 var ExerciseView = Backbone.View.extend({
 	tagName: 'div',
-	render: function() {
-		this.$el.html('<h1>Hello, World</h1>');
+	//events include editing the item, saving the item, and we update the model on each form control input change
+	events: {
+      "click #save":  "save", //the save button press, save to persistent storage
+	  "click #edit": "edit", //the edit button press, shows the edit view, allows model edit
+	  "change .form-control": "update", //triggered on model attribute change, updates the model attribute(s) appropriately
+	},
+	//added a 'template' parameter, defaults to the normal view, optionally can be set to 'edit' to show the edit template
+	render: function(template) {
+		//set the template if it is missing, if set at all show set to edit
+		if (!template || template == ''){
+			template = "view";
+		}
+		else {
+			template = "edit";
+		}
+		//get the model
+		var m = this.model; 
+		//get the template
+		var template = $("#"+template+"_template").html();
+		//function to set selected values appropriately
+		var selected = function(attr,val){return (m.get(attr)==val);}
+		//set types & sample size methods 
+		m.set({"types":[{"type_id":1,"type":"Categorical","sel":selected("type_id",1)},{"type_id":2,"type":"Rating Scale","sel":selected("type_id",2)},{"type_id":3,"type":"Time","sel":selected("type_id",3)},{"type_id":4,"type":"Open Ended","sel":selected("type_id",4)}],"sample_size_methods":[{"method":"Participants","value":"participants","sel":selected("sample_size_method","participants")},{"method":"Responses","value":"responses","sel":selected("sample_size_method","responses")},{"method":"Presentations","value":"presentations","sel":selected("sample_size_method","presentations")}],"sample_size":this.sample_size()});
+		//Mustache it
+		var output = Mustache.render(template,m.toJSON());	
+		this.$el.html(output);
 		return this;
+	},
+	//save functionality
+	//would start RESTful call, right now it throws an alert, console log, and shows the regular view again
+	save: function() {
+		console.log("REST POST Call");
+		alert("REST POST Call");
+		this.render();
+	},
+	//edit functionality
+	//loads the edit view
+	edit: function() {
+		this.render('edit');
+	},
+	//returns the proper sample size based upon the sample_size_method
+	sample_size: function(){
+		return this.model.get("num_"+this.model.get("sample_size_method"));
+	},
+	//the update function updates the model as the user "change"s them
+	update: function(e){
+		//hash map of id's to model attributes, XSS prevention
+		var h = {"inputName":"name","textPrompt":"prompt","selectType":"type_id","selectSampleSize":"sample_size_method"};
+		//check a value is set based upon the target's id or name
+		if ($(e.target).val() != undefined){
+			var val = h[$(e.target).attr("id")]; //set based upon id
+			if (val == undefined){ //value wasn't found based upon id so use name
+				val = h[$(e.target).attr("name")];
+			}
+			//a value exists so set the model
+			if (val != undefined){
+				this.model.set(val,$(e.target).val());
+			}
+		}
 	}
 });
 

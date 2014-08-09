@@ -9,9 +9,160 @@
 		<script src="http://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
 		<script src="http://cdnjs.cloudflare.com/ajax/libs/mustache.js/0.8.1/mustache.min.js"></script>
 		<script src="http://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js"></script>
+		<style type="text/css">
+			/* Space out content a bit */
+			body {
+			  padding-top: 20px;
+			  padding-bottom: 20px;
+			}
+			/* bold panel heading area */
+			.panel-heading p {
+				font-weight:bold;
+			}
+			/* form control widths */
+			input, button, select { 
+				width:auto !important; 
+			}
+			/* fix spacing between form group items vertically */
+			.form-group {
+				margin-bottom:0px;
+			}
+			/* align the static values in the form */
+			.form-group p {
+				padding-top:7px;
+			}
+			/* Customize container */
+			@media (min-width: 768px) {
+			  #container {
+				max-width: 730px;
+				margin:0 auto;
+			  }
+			}
+		</style>
 	</head>
 	<body>
-		<div id="container"></div>
+		<div id="container">
+		</div>
+		<script id="edit_template" type="text/html">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<div class="row">
+						<div class="col-md-4"><a href="#" class=""><i class="glyphicon glyphicon-chevron-left"></i> All Saved Questions</a></div>
+						<div class="col-md-4 text-center"><p class="panel-title">{{name}}</p></div>
+						<div class="col-md-4 text-right"><a class="btn btn-xs">Cancel</a> <a id="save" class="btn btn-xs btn-primary">Save</a></div>
+					</div>
+				</div>
+				<div id="panel-body" class="panel-body">
+					<form class="form-horizontal" role="form">
+						<div class="form-group">
+							<label for="inputName" class="col-sm-2 control-label">Name</label>
+							<div class="col-sm-10">
+								<input type="text" class="form-control" id="inputName" placeholder="Name" value="{{name}}" maxlength="20">
+								<p class="help-block">Max length 120 characters</p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="textPrompt" class="col-sm-2 control-label">Prompt</label>
+							<div class="col-sm-10">
+								<textarea class="form-control" id="textPrompt" maxlength="1020">{{prompt}}</textarea>
+								<p class="help-block">Max length 1,020 characters</p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="inputSource" class="col-sm-2 control-label">Source</label>
+							<div class="col-sm-10">
+								<p><strong>{{source}}</strong></p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="selectType" class="col-sm-2 control-label">Type</label>
+							<div class="col-sm-10">
+								<select id="selectType" class="form-control">{{#types}}
+									<option value="{{type_id}}" {{#sel}}selected{{/sel}}> 
+										{{type}} 
+									</option> 
+									{{/types}}</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="inputNumResp" class="col-sm-2 control-label">Number of Responses</label>
+							<div class="col-sm-10">
+								<p><strong>{{num_responses}}</strong></p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="selectSampleSize" class="col-sm-2 control-label">Sample Size</label>
+							<div class="col-sm-10">
+								<div class="btn-group" data-toggle="buttons" id="selectSampleSize">{{#sample_size_methods}}
+									<label class="btn btn-default {{#sel}}active{{/sel}}">
+										<input type="radio" name="selectSampleSize" class="form-control" value="{{value}}" {{#sel}}checked{{/sel}}>{{method}}
+									</label>
+								{{/sample_size_methods}}</div>
+									
+								<ul class="help-block">
+									<li>Total number of unique participants in the study</li>
+									<li>Total number of responses to this question</li>
+									<li>Number of unique participants who gave a response (even empty)</li>
+								</ul>
+							</div>
+						</div>
+						
+					</form>
+				</div>
+			</div>
+		</script>
+		<script id="view_template" type="text/html">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<div class="row">
+						<div class="col-md-4"><a href="#" class=""><i class="glyphicon glyphicon-chevron-left"></i> All Saved Questions</a></div>
+						<div class="col-md-4 text-center"><p class="panel-title">{{name}}</p></div>
+						<div class="col-md-4 text-right"><a id="add_to_excel" class="btn btn-xs btn-default">Add to Excel</a> <a id="edit" class="btn btn-xs btn-default">Edit</a> <a id="unsave" class="btn btn-xs btn-default">Unsave</a></div>
+					</div>
+				</div>
+				<div id="panel-body" class="panel-body">
+					<form class="form-horizontal" role="form">
+						<div class="form-group">
+							<label for="inputName" class="col-sm-2 control-label">Name</label>
+							<div class="col-sm-10">
+								<p>{{name}}</p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="textPrompt" class="col-sm-2 control-label">Prompt</label>
+							<div class="col-sm-10">
+								<p>{{prompt}}</p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="inputSource" class="col-sm-2 control-label">Source</label>
+							<div class="col-sm-10">
+								<p>{{source}}</p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="selectType" class="col-sm-2 control-label">Type</label>
+							<div class="col-sm-10">
+								<p>{{#types}}{{#sel}}{{type}}{{/sel}}{{/types}}</p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="inputNumResp" class="col-sm-2 control-label">Number of Responses</label>
+							<div class="col-sm-10">
+								<p>{{num_responses}}</p>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="selectSampleSize" class="col-sm-2 control-label">Sample Size</label>
+							<div class="col-sm-10">
+								<p>{{sample_size}}</p>
+							</div>
+						</div>
+						
+					</form>
+				</div>
+			</div>
+		</script>
 		<script src="./exercise.js"></script>
 	</body>
 </html>
